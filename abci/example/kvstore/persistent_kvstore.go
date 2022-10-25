@@ -170,6 +170,21 @@ func (app *PersistentKVStoreApplication) ApplySnapshotChunk(
 	return types.ResponseApplySnapshotChunk{Result: types.ResponseApplySnapshotChunk_ABORT}
 }
 
+func (app *PersistentKVStoreApplication) PrepareProposal(
+	req types.RequestPrepareProposal) types.ResponsePrepareProposal {
+	return types.ResponsePrepareProposal{Txs: app.substPrepareTx(req.Txs, req.MaxTxBytes)}
+}
+
+func (app *PersistentKVStoreApplication) ProcessProposal(
+	req types.RequestProcessProposal) types.ResponseProcessProposal {
+	for _, tx := range req.Txs {
+		if len(tx) == 0 || isPrepareTx(tx) {
+			return types.ResponseProcessProposal{Status: types.ResponseProcessProposal_REJECT}
+		}
+	}
+	return types.ResponseProcessProposal{Status: types.ResponseProcessProposal_ACCEPT}
+}
+
 //---------------------------------------------
 // update validators
 
@@ -283,4 +298,43 @@ func (app *PersistentKVStoreApplication) updateValidator(v types.ValidatorUpdate
 	app.ValUpdates = append(app.ValUpdates, v)
 
 	return types.ResponseDeliverTx{Code: code.CodeTypeOK}
+}
+
+// -----------------------------
+
+const (
+	PreparePrefix = "prepare"
+	ReplacePrefix = "replace"
+)
+
+func isPrepareTx(tx []byte) bool { return bytes.HasPrefix(tx, []byte(PreparePrefix)) }
+
+func isReplacedTx(tx []byte) bool {
+	return bytes.HasPrefix(tx, []byte(ReplacePrefix))
+}
+
+// execPrepareTx is noop. tx data is considered as placeholder
+// and is substitute at the PrepareProposal.
+func (app *PersistentKVStoreApplication) execPrepareTx(tx []byte) types.ResponseDeliverTx {
+	// noop
+	return types.ResponseDeliverTx{}
+}
+
+// substPrepareTx substitutes all the transactions prefixed with 'prepare' in the
+// proposal for transactions with the prefix stripped.
+func (app *PersistentKVStoreApplication) substPrepareTx(blockData [][]byte, maxTxBytes int64) [][]byte {
+	txs := make([][]byte, 0, len(blockData))
+	var totalBytes int64
+	for _, tx := range blockData {
+		txMod := tx
+		if isPrepareTx(tx) {
+			txMod = bytes.Replace(tx, []byte(PreparePrefix), []byte(ReplacePrefix), 1)
+		}
+		totalBytes += int64(len(txMod))
+		if totalBytes > maxTxBytes {
+			break
+		}
+		txs = append(txs, txMod)
+	}
+	return txs
 }
