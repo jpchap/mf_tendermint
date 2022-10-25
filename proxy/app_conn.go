@@ -83,7 +83,8 @@ func (app *appConnConsensus) PrepareProposalSync(
 	return app.appConn.PrepareProposalSync(req)
 }
 
-func (app *appConnConsensus) ProcessProposalSync(req types.RequestProcessProposal) (*types.ResponseProcessProposal, error) {
+func (app *appConnConsensus) ProcessProposalSync(
+	req types.RequestProcessProposal) (*types.ResponseProcessProposal, error) {
 	return app.appConn.ProcessProposalSync(req)
 }
 

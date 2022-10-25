@@ -443,7 +443,9 @@ func (cli *grpcClient) PrepareProposalSync(
 	return cli.finishSyncCall(reqres).GetPrepareProposal(), cli.Error()
 }
 
-func (cli *grpcClient) ProcessProposalSync(params types.RequestProcessProposal) (*types.ResponseProcessProposal, error) {
+func (cli *grpcClient) ProcessProposalSync(
+	params types.RequestProcessProposal,
+) (*types.ResponseProcessProposal, error) {
 	reqres := cli.ProcessProposalAsync(params)
 	return cli.finishSyncCall(reqres).GetProcessProposal(), cli.Error()
 }
