@@ -207,6 +207,28 @@ func (app *localClient) ApplySnapshotChunkAsync(req types.RequestApplySnapshotCh
 	)
 }
 
+func (app *localClient) ExtendVoteAsync(req types.RequestExtendVote) *ReqRes {
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.ExtendVote(req)
+	return app.callback(
+		types.ToRequestExtendVote(req),
+		types.ToResponseExtendVote(res),
+	)
+}
+
+func (app *localClient) VerifyVoteExtensionAsync(req types.RequestVerifyVoteExtension) *ReqRes {
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.VerifyVoteExtension(req)
+	return app.callback(
+		types.ToRequestVerifyVoteExtension(req),
+		types.ToResponseVerifyVoteExtension(res),
+	)
+}
+
 func (app *localClient) PrepareProposalAsync(req types.RequestPrepareProposal) *ReqRes {
 	app.mtx.Lock()
 	defer app.mtx.Unlock()
@@ -358,6 +380,24 @@ func (app *localClient) ProcessProposalSync(req types.RequestProcessProposal) (*
 	defer app.mtx.Unlock()
 
 	res := app.Application.ProcessProposal(req)
+	return &res, nil
+}
+
+func (app *localClient) ExtendVoteSync(req types.RequestExtendVote) (*types.ResponseExtendVote, error) {
+
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.ExtendVote(req)
+	return &res, nil
+}
+
+func (app *localClient) VerifyVoteExtensionSync(req types.RequestVerifyVoteExtension) (*types.ResponseVerifyVoteExtension, error) {
+
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.VerifyVoteExtension(req)
 	return &res, nil
 }
 

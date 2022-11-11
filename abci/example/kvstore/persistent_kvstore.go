@@ -185,6 +185,16 @@ func (app *PersistentKVStoreApplication) ProcessProposal(
 	return types.ResponseProcessProposal{Result: types.ResponseProcessProposal_ACCEPT}
 }
 
+func (app *PersistentKVStoreApplication) ExtendVote(
+	req types.RequestExtendVote) types.ResponseExtendVote {
+	return types.ResponseExtendVote{}
+}
+
+func (app *PersistentKVStoreApplication) VerifyVoteExtension(
+	req types.RequestVerifyVoteExtension) types.ResponseVerifyVoteExtension {
+	return types.ResponseVerifyVoteExtension{}
+}
+
 //---------------------------------------------
 // update validators
 

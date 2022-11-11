@@ -287,6 +287,14 @@ func (cli *socketClient) ProcessProposalAsync(req types.RequestProcessProposal) 
 	return cli.queueRequest(types.ToRequestProcessProposal(req))
 }
 
+func (cli *socketClient) ExtendVoteAsync(req types.RequestExtendVote) *ReqRes {
+	return cli.queueRequest(types.ToRequestExtendVote(req))
+}
+
+func (cli *socketClient) VerifyVoteExtensionAsync(req types.RequestVerifyVoteExtension) *ReqRes {
+	return cli.queueRequest(types.ToRequestVerifyVoteExtension(req))
+}
+
 //----------------------------------------
 
 func (cli *socketClient) FlushSync() error {
@@ -443,6 +451,24 @@ func (cli *socketClient) ProcessProposalSync(req types.RequestProcessProposal) (
 	return reqres.Response.GetProcessProposal(), cli.Error()
 }
 
+func (cli *socketClient) ExtendVoteSync(req types.RequestExtendVote) (*types.ResponseExtendVote, error) {
+
+	reqres := cli.queueRequest(types.ToRequestExtendVote(req))
+	if err := cli.FlushSync(); err != nil {
+		return nil, err
+	}
+	return reqres.Response.GetExtendVote(), cli.Error()
+}
+
+func (cli *socketClient) VerifyVoteExtensionSync(req types.RequestVerifyVoteExtension) (*types.ResponseVerifyVoteExtension, error) {
+
+	reqres := cli.queueRequest(types.ToRequestVerifyVoteExtension(req))
+	if err := cli.FlushSync(); err != nil {
+		return nil, err
+	}
+	return reqres.Response.GetVerifyVoteExtension(), cli.Error()
+}
+
 //----------------------------------------
 
 func (cli *socketClient) queueRequest(req *types.Request) *ReqRes {
@@ -522,6 +548,10 @@ func resMatchesReq(req *types.Request, res *types.Response) (ok bool) {
 		_, ok = res.Value.(*types.Response_PrepareProposal)
 	case *types.Request_ProcessProposal:
 		_, ok = res.Value.(*types.Response_ProcessProposal)
+	case *types.Request_ExtendVote:
+		_, ok = res.Value.(*types.Response_ExtendVote)
+	case *types.Request_VerifyVoteExtension:
+		_, ok = res.Value.(*types.Response_VerifyVoteExtension)
 	}
 	return ok
 }

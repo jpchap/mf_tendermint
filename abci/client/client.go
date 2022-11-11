@@ -35,6 +35,8 @@ type Client interface {
 	CommitAsync() *ReqRes
 	InitChainAsync(types.RequestInitChain) *ReqRes
 	PrepareProposalAsync(types.RequestPrepareProposal) *ReqRes
+	ExtendVoteAsync(types.RequestExtendVote) *ReqRes
+	VerifyVoteExtensionAsync(types.RequestVerifyVoteExtension) *ReqRes
 	BeginBlockAsync(types.RequestBeginBlock) *ReqRes
 	EndBlockAsync(types.RequestEndBlock) *ReqRes
 	ListSnapshotsAsync(types.RequestListSnapshots) *ReqRes
@@ -53,6 +55,8 @@ type Client interface {
 	InitChainSync(types.RequestInitChain) (*types.ResponseInitChain, error)
 	PrepareProposalSync(types.RequestPrepareProposal) (*types.ResponsePrepareProposal, error)
 	ProcessProposalSync(types.RequestProcessProposal) (*types.ResponseProcessProposal, error)
+	ExtendVoteSync(types.RequestExtendVote) (*types.ResponseExtendVote, error)
+	VerifyVoteExtensionSync(types.RequestVerifyVoteExtension) (*types.ResponseVerifyVoteExtension, error)
 	BeginBlockSync(types.RequestBeginBlock) (*types.ResponseBeginBlock, error)
 	EndBlockSync(types.RequestEndBlock) (*types.ResponseEndBlock, error)
 	ListSnapshotsSync(types.RequestListSnapshots) (*types.ResponseListSnapshots, error)

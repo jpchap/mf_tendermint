@@ -300,6 +300,36 @@ func (cli *grpcClient) ApplySnapshotChunkAsync(params types.RequestApplySnapshot
 	return cli.finishAsyncCall(req, &types.Response{Value: &types.Response_ApplySnapshotChunk{ApplySnapshotChunk: res}})
 }
 
+// NOTE: call is synchronous, use ctx to break early if needed
+func (cli *grpcClient) ExtendVoteAsync(params types.RequestExtendVote) *ReqRes {
+	req := types.ToRequestExtendVote(params)
+	res, err := cli.client.ExtendVote(context.Background(), req.GetExtendVote(), grpc.WaitForReady(true))
+	if err != nil {
+		cli.StopForError(err)
+	}
+	return cli.finishAsyncCall(
+		req,
+		&types.Response{Value: &types.Response_ExtendVote{ExtendVote: res}},
+	)
+}
+
+// NOTE: call is synchronous, use ctx to break early if needed
+func (cli *grpcClient) VerifyVoteExtensionAsync(params types.RequestVerifyVoteExtension) *ReqRes {
+	req := types.ToRequestVerifyVoteExtension(params)
+	res, err := cli.client.VerifyVoteExtension(context.Background(), req.GetVerifyVoteExtension(), grpc.WaitForReady(true))
+	if err != nil {
+		cli.StopForError(err)
+	}
+	return cli.finishAsyncCall(
+		req,
+		&types.Response{
+			Value: &types.Response_VerifyVoteExtension{
+				VerifyVoteExtension: res,
+			},
+		},
+	)
+}
+
 func (cli *grpcClient) PrepareProposalAsync(params types.RequestPrepareProposal) *ReqRes {
 	req := types.ToRequestPrepareProposal(params)
 	res, err := cli.client.PrepareProposal(context.Background(), req.GetPrepareProposal(), grpc.WaitForReady(true))
@@ -441,6 +471,18 @@ func (cli *grpcClient) PrepareProposalSync(
 	params types.RequestPrepareProposal) (*types.ResponsePrepareProposal, error) {
 	reqres := cli.PrepareProposalAsync(params)
 	return cli.finishSyncCall(reqres).GetPrepareProposal(), cli.Error()
+}
+
+func (cli *grpcClient) ExtendVoteSync(
+	params types.RequestExtendVote) (*types.ResponseExtendVote, error) {
+	reqres := cli.ExtendVoteAsync(params)
+	return cli.finishSyncCall(reqres).GetExtendVote(), cli.Error()
+}
+
+func (cli *grpcClient) VerifyVoteExtensionSync(
+	params types.RequestVerifyVoteExtension) (*types.ResponseVerifyVoteExtension, error) {
+	reqres := cli.VerifyVoteExtensionAsync(params)
+	return cli.finishSyncCall(reqres).GetVerifyVoteExtension(), cli.Error()
 }
 
 func (cli *grpcClient) ProcessProposalSync(

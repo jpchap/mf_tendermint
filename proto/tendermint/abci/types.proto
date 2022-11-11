@@ -38,6 +38,8 @@ message Request {
     RequestApplySnapshotChunk apply_snapshot_chunk = 15;
     RequestPrepareProposal    prepare_proposal     = 16;
     RequestProcessProposal    process_proposal     = 17;
+    RequestExtendVote          extend_vote           = 18;
+    RequestVerifyVoteExtension verify_vote_extension = 19;
   }
 }
 
@@ -126,12 +128,25 @@ message RequestApplySnapshotChunk {
   string sender = 3;
 }
 
+// Extends a vote with application-side injection
+message RequestExtendVote {
+  types.Vote vote = 1;
+}
+
+// Verify the vote extension
+message RequestVerifyVoteExtension {
+  types.Vote vote = 1;
+}
+
 message RequestPrepareProposal {
   // the modified transactions cannot exceed this size.
   int64 max_tx_bytes = 1;
   // txs is an array of transactions that will be included in a block,
   // sent to the app for possible modifications.
   repeated bytes txs = 2;
+  // votes includes all votes from the previous block. This contains vote extension data that can be used in proposal
+  // preparation. The votes here will then form the last commit that gets sent in the proposed block.
+  repeated types.Vote votes = 3;
 }
 
 message RequestProcessProposal {
@@ -161,6 +176,8 @@ message Response {
     ResponseApplySnapshotChunk apply_snapshot_chunk = 16;
     ResponsePrepareProposal    prepare_proposal     = 17;
     ResponseProcessProposal    process_proposal     = 18;
+    ResponseExtendVote          extend_vote          = 19;
+    ResponseVerifyVoteExtension verify_vote_extension = 20;
   }
 }
 
@@ -312,6 +329,21 @@ message ResponseProcessProposal {
   }
 }
 
+message ResponseExtendVote {
+  tendermint.types.VoteExtension vote_extension = 1;
+}
+
+message ResponseVerifyVoteExtension {
+  Result result = 1;
+
+  enum Result {
+    UNKNOWN       = 0;  // Unknown result, treat as ACCEPT by default
+    ACCEPT        = 1;  // Vote extension verified, include the vote
+    SLASH         = 2;  // Vote extension verification aborted, continue but slash validator
+    REJECT        = 3;  // Vote extension invalidated
+  }
+}
+
 //----------------------------------------
 // Misc.
 
@@ -442,4 +474,6 @@ service ABCIApplication {
       returns (ResponseApplySnapshotChunk);
   rpc PrepareProposal(RequestPrepareProposal) returns (ResponsePrepareProposal);
   rpc ProcessProposal(RequestProcessProposal) returns (ResponseProcessProposal);
+  rpc ExtendVote(RequestExtendVote) returns (ResponseExtendVote);
+  rpc VerifyVoteExtension(RequestVerifyVoteExtension) returns (ResponseVerifyVoteExtension);
 }
