@@ -192,7 +192,7 @@ func (app *PersistentKVStoreApplication) ExtendVote(
 
 func (app *PersistentKVStoreApplication) VerifyVoteExtension(
 	req types.RequestVerifyVoteExtension) types.ResponseVerifyVoteExtension {
-	return types.ResponseVerifyVoteExtension{}
+	return types.ResponseVerifyVoteExtension{Result: types.ResponseVerifyVoteExtension_ACCEPT}
 }
 
 //---------------------------------------------
